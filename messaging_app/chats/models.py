@@ -1,3 +1,4 @@
+import uuid
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 
@@ -26,7 +27,11 @@ class CustomUserManager(BaseUserManager):
 
 # Custom user model extending AbstractUser
 class CustomUser(AbstractUser):
+    user_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(unique=True, null=False, blank=False, max_length=255) # Email is unique and required
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
+    phone_number = models.CharField(max_length=20)
     display_name = models.CharField(max_length=255, blank=True, null=True)
     REQUIRED_FIELDS = ['email']  # Specify the fields that are required when creating a user (excluding the username)
    
@@ -36,17 +41,22 @@ class CustomUser(AbstractUser):
         return self.username
 
 class Conversation(models.Model):
+    conversation_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     participants = models.ManyToManyField(CustomUser, related_name='conversations')
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Conversation {self.id}"
+        return f"Conversation {self.conversation_id}"
 
 class Message(models.Model):
+    message_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     sender = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='sent_messages')
     conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name='messages')
-    content = models.TextField()
-    timestamp = models.DateTimeField(auto_now_add=True)
+    message_body = models.TextField()
+    sent_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Message from {self.sender} in Conversation {self.conversation.conversation_id}"
 
     def __str__(self):
         return f"Message from {self.sender} in Conversation {self.conversation.id}"
