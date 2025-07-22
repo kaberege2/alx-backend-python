@@ -29,7 +29,7 @@ A secure messaging application built with Django and Django REST Framework that 
 ## 📦 Installation
 
 ```bash
-git clone https://github.com/your-username/alx-backend-python.git
+git clone https://github.com/kaberege/alx-backend-python.git
 cd alx-backend-python/messaging_app
 python -m venv venv
 source venv/bin/activate  # On Windows use `venv\Scripts\activate`

@@ -128,6 +128,8 @@ AUTH_USER_MODEL = "chats.CustomUser" # Custom user
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
@@ -141,3 +143,4 @@ REST_FRAMEWORK = {
     ],
 }
 
+'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
