@@ -40,7 +40,13 @@ class MessageViewSet(viewsets.ModelViewSet):
     ordering_fields = ['sent_at']
 
     def get_queryset(self):
-        return Message.objects.filter(conversation__participants=self.request.user)
+        conversation_id = self.request.query_params.get('conversation_id')
+        queryset = Message.objects.filter(conversation__participants=self.request.user)
+
+        if conversation_id:
+            queryset = queryset.filter(conversation__conversation_id=conversation_id)
+
+        return queryset
 
     def perform_create(self, serializer):
     conversation = serializer.validated_data['conversation']
