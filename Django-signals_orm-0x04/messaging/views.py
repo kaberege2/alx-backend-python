@@ -35,3 +35,12 @@ def delete_user(request):
     user = request.user
     user.delete()
     return Response({"detail": "User account deleted."}, status=status.HTTP_204_NO_CONTENT)
+    
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def create_message(request):
+    serializer = MessageSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save(sender=request.user)
+        return Response({"message": "Message sent successfully"}, status=status.HTTP_201_CREATED)
+    return Response({"message": "Failed to save message to the database"}, status=status.HTTP_400_BAD_REQUEST)
