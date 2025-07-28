@@ -15,6 +15,7 @@ def log_message_edits(sender, instance, **kwargs):
         if old.content != instance.content:
             MessageHistory.objects.create(message=old, old_content=old.content)
             instance.edited = True
+            instance.edited_by = instance.sender
 
 @receiver(post_delete, sender=User)
 def delete_related_data(sender, instance, **kwargs):

@@ -1,17 +1,28 @@
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
-from django.contrib.auth.models import User
+from rest_framework import generics, permissions
+from rest_framework.views import APIView
+from rest_framework.response import Response
 from django.views.decorators.cache import cache_page
+from django.utils.decorators import method_decorator
 from messaging.models import Message
+from messaging.serializers import MessageSerializer
 
-@login_required
-def delete_user(request):
-    user = request.user
-    user.delete()
-    return redirect('home')
+class MessageListCreateView(generics.ListCreateAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = MessageSerializer
 
-@cache_page(60)
-@login_required
-def conversation_view(request):
-    messages = Message.objects.filter(receiver=request.user).select_related('sender').prefetch_related('replies')
-    return render(request, 'chats/conversation.html', {'messages': messages})
+    def get_queryset(self):
+        return Message.objects.filter(receiver=self.request.user, sender=self.request.user).select_related('sender').prefetch_related('replies').only('id', 'sender', 'receiver', 'content', 'timestamp')
+
+    def perform_create(self, serializer):
+        serializer.save(sender=self.request.user)
+
+@method_decorator(cache_page(60), name='dispatch')
+class CachedConversationView(MessageListCreateView):
+    pass
+
+class UnreadMessagesView(generics.ListAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = MessageSerializer
+
+    def get_queryset(self):
+        return Message.unread.unread_for_user(self.request.user)

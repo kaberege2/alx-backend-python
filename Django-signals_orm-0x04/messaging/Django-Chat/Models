@@ -1,9 +1,0 @@
-def get_threaded_replies(message):
-    replies = message.replies.all().select_related('sender')
-    thread = []
-    for reply in replies:
-        thread.append({
-            'message': reply,
-            'replies': get_threaded_replies(reply)
-        })
-    return thread
