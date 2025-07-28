@@ -1,10 +1,12 @@
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.views.decorators.cache import cache_page
 from django.utils.decorators import method_decorator
+from django.contrib.auth.models import User
 from messaging.models import Message
 from messaging.serializers import MessageSerializer
+from rest_framework.decorators import api_view, permission_classes
 
 class MessageListCreateView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -26,3 +28,10 @@ class UnreadMessagesView(generics.ListAPIView):
 
     def get_queryset(self):
         return Message.unread.unread_for_user(self.request.user)
+
+@api_view(['DELETE'])
+@permission_classes([permissions.IsAuthenticated])
+def delete_user(request):
+    user = request.user
+    user.delete()
+    return Response({"detail": "User account deleted."}, status=status.HTTP_204_NO_CONTENT)
