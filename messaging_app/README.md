@@ -1,6 +1,6 @@
-# 📬 Messaging App
+# 📬 Messaging App (Dockerized)
 
-A secure messaging application built with Django and Django REST Framework that supports user registration, login via JWT, real-time-like conversations, message handling, permissions, pagination, and filtering.
+A secure messaging application built with Django and Django REST Framework, now fully containerized with Docker & Docker Compose. Supports user registration, JWT-based authentication, real-time-like conversations, message handling, custom permissions, pagination, and filtering.
 
 ---
 
@@ -8,60 +8,85 @@ A secure messaging application built with Django and Django REST Framework that 
 
 - 🔐 **JWT Authentication** (using `djangorestframework-simplejwt`)
 - 👤 Custom User Model (UUID-based)
-- 💬 Create Conversations & Send Messages
-- 🔒 Permissions: Only participants can access their conversations/messages
-- 📃 Pagination: Fetch 20 messages per page
-- 🔎 Filtering: Filter messages by time range and conversation
+- 💬 Conversations & Messaging System
+- 🔒 Fine-grained Permissions (only participants access conversations/messages)
+- 📃 Pagination (20 messages per page)
+- 🔎 Filtering (filter messages by date range & conversation)
+- 🐳 Fully Dockerized (Docker & Docker Compose with MySQL)
 - 🧪 API tested with Postman
 
 ---
 
 ## 🛠️ Tech Stack
 
-- Django
+- Django 5.2
 - Django REST Framework (DRF)
-- djangorestframework-simplejwt
+- SimpleJWT
 - django-filter
-- SQLite (for development)
+- MySQL (via Docker)
+- Docker & Docker Compose
 
 ---
 
-## 📦 Installation
+## 📦 Local Setup (Dockerized)
+
+### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/kaberege/alx-backend-python.git
+git clone https://github.com/kaberege2/alx-backend-python.git
 cd alx-backend-python/messaging_app
-python -m venv venv
-source venv/bin/activate  # On Windows use `venv\Scripts\activate`
-pip install -r requirements.txt
+```
+
+### 2. Create `.env` File
+
+```bash
+cp .env.example .env
+```
+
+Fill in `.env`:
+
+```env
+MYSQL_DATABASE=messaging_db
+MYSQL_USER=messaging_user
+MYSQL_PASSWORD=messaging_password
+MYSQL_ROOT_PASSWORD=rootpassword
+
+DB_NAME=messaging_db
+DB_USER=messaging_user
+DB_PASSWORD=messaging_password
+DB_HOST=db
+DB_PORT=3306
+```
+
+### 3. Build Docker Containers
+
+```bash
+docker-compose build
+```
+
+### 4. Run Containers
+
+```bash
+docker-compose up
+```
+
+### 5. Apply Migrations
+
+In a separate terminal, run:
+
+```bash
+docker-compose exec web python manage.py migrate
+```
+
+### 6. (Optional) Create Superuser
+
+```bash
+docker-compose exec web python manage.py createsuperuser
 ```
 
 ---
 
-## ⚙️ Setup
-
-### 1. Apply Migrations
-
-```bash
-python manage.py makemigrations
-python manage.py migrate
-```
-
-### 2. Create Superuser (optional)
-
-```bash
-python manage.py createsuperuser
-```
-
-### 3. Run Development Server
-
-```bash
-python manage.py runserver
-```
-
----
-
-## 🔐 Authentication
+## 🔐 Authentication Endpoints
 
 ### Register
 
@@ -89,20 +114,9 @@ python manage.py runserver
 }
 ```
 
-Response:
-
-```json
-{
-  "refresh": "your-refresh-token",
-  "access": "your-access-token"
-}
-```
-
-> Use `Authorization: Bearer <access>` in headers for protected routes.
-
 ---
 
-## 📩 Conversations & Messages
+## 📩 Conversations & Messages API
 
 ### Create Conversation
 
@@ -125,19 +139,9 @@ Response:
 
 ---
 
-## 🔒 Permissions
+## ⚙️ Configuration Highlights
 
-- Only authenticated users can access APIs.
-- Only participants of a conversation can:
-
-  - View, send, update or delete messages.
-  - Access specific conversations.
-
----
-
-## ⚙️ Configuration
-
-### `settings.py` Highlights
+### Django Settings (`settings.py`)
 
 ```python
 REST_FRAMEWORK = {
@@ -154,50 +158,51 @@ REST_FRAMEWORK = {
         'rest_framework.filters.OrderingFilter',
     ],
 }
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': os.environ.get('DB_NAME'),
+        'USER': os.environ.get('DB_USER'),
+        'PASSWORD': os.environ.get('DB_PASSWORD'),
+        'HOST': os.environ.get('DB_HOST'),
+        'PORT': os.environ.get('DB_PORT', '3306'),
+    }
+}
 ```
 
 ---
 
-## 🧪 Testing with Postman
+## 🐳 Docker Setup Overview
 
-Test all endpoints with Postman:
+### Dockerfile
+
+- Based on `python:3.10-slim`
+- Installs Python dependencies from `requirements.txt`
+- Runs Django app on port 8000
+
+### docker-compose.yml
+
+- Defines two services:
+
+  - `web`: Django app container.
+  - `db`: MySQL 8.0 database container with persistent volume.
+
+- Environment variables managed via `.env`.
+
+---
+
+## 🗃️ Persist Data with Docker Volumes
+
+The MySQL service uses a Docker volume (`mysql_data`) to ensure that database data persists across container restarts.
+
+---
+
+## 🧪 API Testing
+
+Test API endpoints using Postman:
 
 - Register/Login
-- Auth token usage
-- Conversations and messages CRUD
-- Pagination and filtering
-
-Collection: `/postman-collections/messaging_app.json` (Create this if needed)
-
----
-
-## 📁 Project Structure
-
-```
-messaging_app/
-│
-├── chats/
-│   ├── models.py
-│   ├── views.py
-│   ├── serializers.py
-│   ├── auth.py
-│   ├── permissions.py
-│   ├── pagination.py
-│   └── filters.py
-│
-├── messaging_app/
-│   ├── settings.py
-│   └── urls.py
-│
-├── manage.py
-└── requirements.txt
-```
-
----
-
-## ✅ To Do
-
-- ✅ JWT Auth
-- ✅ Custom Permissions
-- ✅ Pagination & Filters
-- ✅ Postman Testing
+- Use JWT in Authorization headers
+- CRUD for Conversations & Messages
+- Pagination & Filtering
