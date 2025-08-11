@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -euo pipefail
+NAMESPACE=messaging-app
+DEPLOYMENT=messaging-app-blue
+CONTAINER_NAME=messaging-app
+NEW_IMAGE=${1:-YOUR_DOCKERHUB_USER/messaging-app:2.0}
+
+kubectl -n $NAMESPACE set image deployment/$DEPLOYMENT $CONTAINER_NAME=$NEW_IMAGE --record
+kubectl -n $NAMESPACE rollout status deployment/$DEPLOYMENT
+
+END=$((SECONDS+60))
+URL="http://$(minikube ip):30080/"
+while [ $SECONDS -lt $END ]; do
+  if curl -fsS $URL >/dev/null 2>&1; then
+    echo "OK"
+  else
+    echo "Request failed"
+  fi
+  sleep 2
+done
+
+kubectl -n $NAMESPACE get pods -l variant=blue -o wide

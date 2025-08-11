@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -euo pipefail
+NAMESPACE=messaging-app
+
+kubectl -n $NAMESPACE apply -f blue_deployment.yaml
+kubectl -n $NAMESPACE apply -f green_deployment.yaml
+kubectl -n $NAMESPACE apply -f kubeservice.yaml
+kubectl -n $NAMESPACE rollout status deployment/messaging-app-blue
+kubectl -n $NAMESPACE rollout status deployment/messaging-app-green
+
+echo "Blue and Green deployed. Use the patch command commented above to switch traffic."

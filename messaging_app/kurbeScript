@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+minikube start --driver=docker || minikube start
+
+minikube addons enable ingress || true
+
+kubectl apply -f namespace.yaml
+kubectl -n messaging-app get namespace
+
+kubectl cluster-info
+kubectl get nodes
+kubectl get pods -A
+
+echo "Minikube and cluster should be up."

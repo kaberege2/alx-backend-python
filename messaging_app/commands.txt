@@ -1,0 +1,2 @@
+# Example command to apply the ingress after ensuring nginx ingress controller is installed
+kubectl -n messaging-app apply -f ingress.yaml

@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+NAMESPACE=messaging-app
+DEPLOYMENT=messaging-app
+REPLICAS=${1:-3}
+
+kubectl -n $NAMESPACE scale deployment/$DEPLOYMENT --replicas=$REPLICAS
+kubectl -n $NAMESPACE get pods -l app=messaging-app -o wide
+kubectl -n $NAMESPACE top pods || true
